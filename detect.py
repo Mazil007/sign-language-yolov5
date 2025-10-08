@@ -34,8 +34,19 @@ import os
 import platform
 import sys
 from pathlib import Path
+import pyttsx3
+from googletrans import Translator
+from gtts import gTTS
+import playsound
+
 
 import torch
+import pathlib
+import sys
+
+# Fix PosixPath error on Windows
+pathlib.PosixPath = pathlib.WindowsPath
+
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
