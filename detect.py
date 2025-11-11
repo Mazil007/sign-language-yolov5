@@ -1,10 +1,11 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 """
-Modified detect.py with translation + regional TTS support (gTTS fallback to pyttsx3).
-Saves minimal temp files and plays audio in a background thread so detection isn't blocked.
+Custom detect.py that adds text-to-speech for each detection.
+When a sign class such as "HELLO" is recognised the script speaks the phrase out loud
+using gTTS (online) or falls back to local pyttsx3.
 
-Run:
-    python detect_with_translation.py --weights runs/train/exp/weights/best.pt --source 0 --view-img
+Example:
+    python detect.py --weights best.pt --source 0 --view-img --target-lang en --tts-online
 
 Install required packages:
     pip install googletrans==4.0.0-rc1 gTTS playsound pyttsx3
@@ -79,6 +80,7 @@ from utils.torch_utils import select_device, smart_inference_mode
 
 
 # ------------------- Helper: audio playback -------------------
+# ------------------- Helper: audio playback -------------------
 def _speak_with_gtts(text, lang):
     """Convert text to speech using gTTS and play (blocking)."""
     if gTTS is None or playsound is None:
@@ -127,10 +129,32 @@ def speak_text_async(text, lang_code="en", prefer_online=True):
             except Exception:
                 pass
         # If nothing works, silently fail (but print)
-        print("[TTS] No available TTS engine to speak:", txt)
+        print("[TTS] No available TTS engine to speak:", text)
 
     t = threading.Thread(target=worker, args=(text, lang_code), daemon=True)
     t.start()
+
+
+# ------------------- Speech phrase helpers -------------------
+CLASS_SPEECH_MAP = {
+    "HELLO": "Hello",
+    "I LOVE YOU": "I love you",
+    "NO": "No",
+    "PLEASE": "Please",
+    "THANK YOU": "Thank you",
+    "YES": "Yes",
+    "HOW ARE": "How are you",
+}
+
+
+def normalise_for_speech(raw_label: str) -> str:
+    key = raw_label.strip().upper()
+    if key in CLASS_SPEECH_MAP:
+        return CLASS_SPEECH_MAP[key]
+    # Title-case all-caps words for nicer pronunciation
+    if raw_label.isupper():
+        return raw_label.title()
+    return raw_label
 
 
 # ------------------- Main run function (modified detect) -------------------
@@ -166,7 +190,7 @@ def run(
     dnn=False,
     vid_stride=1,
     # translation/tts options (can be overridden via kwargs with run(...))
-    target_language='ml',  # default regional language: Malayalam ('ml')
+    target_language='en',  # default speech/translation language (ISO code)
     tts_prefer_online=True,  # try gTTS first
     tts_min_interval=1.2,  # minimum seconds between spoken items to avoid overlap
 ):
@@ -276,7 +300,9 @@ def run(
 
                 for *xyxy, conf, cls in reversed(det):
                     c = int(cls)
-                    label = names[c] if hide_conf else f"{names[c]}"
+                    raw_label = names[c]
+                    speech_label = normalise_for_speech(raw_label)
+                    label = raw_label if hide_conf else f"{raw_label}"
                     confidence = float(conf)
                     confidence_str = f"{confidence:.2f}"
 
@@ -304,18 +330,18 @@ def run(
                     try:
                         now = time.time()
                         # speak only when label changes and min interval passed
-                        if label != prev_label and (now - last_spoken_time) >= tts_min_interval:
-                            prev_label = label
+                        if speech_label != prev_label and (now - last_spoken_time) >= tts_min_interval:
+                            prev_label = speech_label
                             last_spoken_time = now
 
                             # get translation (if translator available)
-                            translated_text = label
+                            translated_text = speech_label
                             if translator is not None:
                                 try:
-                                    translated_text = translator.translate(label, dest=target_language).text
+                                    translated_text = translator.translate(speech_label, dest=target_language).text
                                 except Exception:
                                     # translation failed, keep original
-                                    translated_text = label
+                                    translated_text = speech_label
 
                             # speak in background
                             speak_text_async(translated_text, lang_code=target_language, prefer_online=tts_prefer_online)
