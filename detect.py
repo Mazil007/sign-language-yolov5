@@ -143,7 +143,10 @@ CLASS_SPEECH_MAP = {
     "PLEASE": "Please",
     "THANK YOU": "Thank you",
     "YES": "Yes",
-    "HOW ARE": "How are you",
+    "HOW ARE YOU": "How are you",
+    "FINE": "I am fine",
+    "SORRY": "Sorry",
+    "HELP": "Help",
 }
 
 

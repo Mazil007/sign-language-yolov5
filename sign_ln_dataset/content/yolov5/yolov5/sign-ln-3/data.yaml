@@ -1,18 +1,18 @@
 names:
-- HELLO
-- I LOVE YOU
-- 'NO'
-- Please
-- Thank you
-- 'YES'
-- how are
-nc: 7
-roboflow:
-  license: CC BY 4.0
-  project: sign-ln-hkz9p
-  url: https://universe.roboflow.com/final-dv8l8/sign-ln-hkz9p/dataset/3
-  version: 3
-  workspace: final-dv8l8
-test: ../test/images
-train: sign-ln-3/train/images
-val: sign-ln-3/valid/images
+  - HELLO
+  - I LOVE YOU
+  - NO
+  - PLEASE
+  - THANK YOU
+  - YES
+  - HOW ARE YOU
+  - FINE
+  - SORRY
+  - HELP
+
+nc: 10
+
+
+train: C:/Users/Mazil Tanveer/OneDrive/Desktop/final/yolov5/sign_ln_dataset/content/yolov5/yolov5/sign-ln-3/train/images
+val: C:/Users/Mazil Tanveer/OneDrive/Desktop/final/yolov5/sign_ln_dataset/content/yolov5/yolov5/sign-ln-3/valid/images
+test: C:/Users/Mazil Tanveer/OneDrive/Desktop/final/yolov5/sign_ln_dataset/content/yolov5/yolov5/sign-ln-3/test/images

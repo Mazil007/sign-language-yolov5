@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 2
+names: ['fine', 'sorry']
+
+roboflow:
+  workspace: final-dv8l8
+  project: lala-h35i9
+  version: 2
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/final-dv8l8/lala-h35i9/dataset/2
