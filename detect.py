@@ -17,11 +17,11 @@ import csv
 import os
 import platform
 import sys
-from pathlib import Path
-import threading
-import uuid
 import tempfile
+import threading
 import time
+import uuid
+from pathlib import Path
 
 # translation & tts
 try:
@@ -41,9 +41,9 @@ try:
 except Exception:
     pyttsx3 = None
 
-import torch
 import pathlib
-import sys
+
+import torch
 
 # Fix PosixPath error on Windows
 pathlib.PosixPath = pathlib.WindowsPath
@@ -107,10 +107,12 @@ def _speak_with_pyttsx(text):
 
 
 def speak_text_async(text, lang_code="en", prefer_online=True):
-    """Play `text` in background thread. Tries gTTS+playsound first (if prefer_online True), otherwise falls back to pyttsx3.
+    """Play `text` in background thread. Tries gTTS+playsound first (if prefer_online True), otherwise falls back to
+    pyttsx3.
 
     This function returns immediately; playback is done in a daemon thread so it won't block program exit.
     """
+
     def worker(txt, lang):
         # Try gTTS first if available and preferred
         if prefer_online and gTTS is not None and playsound is not None:
@@ -166,7 +168,7 @@ def run(
     dnn=False,
     vid_stride=1,
     # translation/tts options (can be overridden via kwargs with run(...))
-    target_language='ml',  # default regional language: Malayalam ('ml')
+    target_language="ml",  # default regional language: Malayalam ('ml')
     tts_prefer_online=True,  # try gTTS first
     tts_min_interval=1.2,  # minimum seconds between spoken items to avoid overlap
 ):
@@ -285,7 +287,7 @@ def run(
 
                     if save_txt:
                         if save_format == 0:
-                            coords = ((xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist())
+                            coords = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()
                         else:
                             coords = (torch.tensor(xyxy).view(1, 4) / gn).view(-1).tolist()
                         line = (cls, *coords, conf) if save_conf else (cls, *coords)
@@ -318,7 +320,9 @@ def run(
                                     translated_text = label
 
                             # speak in background
-                            speak_text_async(translated_text, lang_code=target_language, prefer_online=tts_prefer_online)
+                            speak_text_async(
+                                translated_text, lang_code=target_language, prefer_online=tts_prefer_online
+                            )
 
                     except Exception as e:
                         print("[Translation/TTS] error:", e)
@@ -367,6 +371,7 @@ def run(
 
 # ------------------- CLI parse and main -------------------
 
+
 def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument("--weights", nargs="+", type=str, default=ROOT / "yolov5s.pt", help="model path or triton URL")
@@ -399,7 +404,9 @@ def parse_opt():
     parser.add_argument("--dnn", action="store_true", help="use OpenCV DNN for ONNX inference")
     parser.add_argument("--vid-stride", type=int, default=1, help="video frame-rate stride")
     # translation CLI args
-    parser.add_argument("--target-lang", type=str, default='ml', help="target language code for translation (eg 'hi','ta','ml')")
+    parser.add_argument(
+        "--target-lang", type=str, default="ml", help="target language code for translation (eg 'hi','ta','ml')"
+    )
     parser.add_argument("--tts-online", action="store_true", help="prefer online TTS (gTTS) over offline pyttsx3")
     parser.add_argument("--tts-interval", type=float, default=1.2, help="minimum seconds between spoken phrases")
 

@@ -1,26 +1,23 @@
-
 # detect_with_translation.py
 # Ultralytics 🚀 - Modified YOLOv5 detect for live translation + TTS
 
 import argparse
 import os
-import sys
-import threading
-import tempfile
-import uuid
-import time
-from pathlib import Path
 import pathlib
-import os
 import sys
+import tempfile
+import threading
+import time
+import uuid
+from pathlib import Path
 
 # Fix PosixPath error on Windows
-if os.name == 'nt':
+if os.name == "nt":
     pathlib.PosixPath = pathlib.WindowsPath
 
 
-import torch
 import cv2
+import torch
 
 # Translation & TTS
 try:
@@ -46,16 +43,21 @@ if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))
 
 from models.common import DetectMultiBackend
-from utils.dataloaders import LoadStreams, LoadImages
-from utils.general import (check_img_size, non_max_suppression, scale_boxes,
-                           xyxy2xywh, increment_path, check_requirements)
+from utils.dataloaders import LoadImages, LoadStreams
+from utils.general import (
+    check_img_size,
+    check_requirements,
+    non_max_suppression,
+    scale_boxes,
+)
 from utils.plots import Annotator, colors
 from utils.torch_utils import select_device, smart_inference_mode
 
 # ------------------ Helper functions ------------------
 
+
 def _speak_with_gtts(text, lang):
-    """Use gTTS + playsound"""
+    """Use gTTS + playsound."""
     if gTTS is None or playsound is None:
         raise RuntimeError("gTTS or playsound not available")
     tf = tempfile.gettempdir()
@@ -68,16 +70,19 @@ def _speak_with_gtts(text, lang):
         if os.path.exists(fname):
             os.remove(fname)
 
+
 def _speak_with_pyttsx(text):
-    """Offline TTS using pyttsx3"""
+    """Offline TTS using pyttsx3."""
     if pyttsx3 is None:
         raise RuntimeError("pyttsx3 not available")
     engine = pyttsx3.init()
     engine.say(str(text))
     engine.runAndWait()
 
+
 def speak_text_async(text, lang_code="en", prefer_online=True):
-    """Speak in background thread"""
+    """Speak in background thread."""
+
     def worker(txt, lang):
         if prefer_online and gTTS is not None and playsound is not None:
             try:
@@ -92,26 +97,30 @@ def speak_text_async(text, lang_code="en", prefer_online=True):
             except Exception:
                 pass
         print("[TTS] No TTS engine available:", txt)
+
     t = threading.Thread(target=worker, args=(text, lang_code), daemon=True)
     t.start()
 
+
 # ------------------ Main Detection ------------------
 
-@smart_inference_mode()
-def run(weights=ROOT / "yolov5s.pt",
-        source=0,
-        imgsz=(640, 640),
-        conf_thres=0.25,
-        iou_thres=0.45,
-        device="",
-        view_img=True,
-        target_language="ml",
-        tts_prefer_online=True,
-        tts_min_interval=1.2):
 
+@smart_inference_mode()
+def run(
+    weights=ROOT / "yolov5s.pt",
+    source=0,
+    imgsz=(640, 640),
+    conf_thres=0.25,
+    iou_thres=0.45,
+    device="",
+    view_img=True,
+    target_language="ml",
+    tts_prefer_online=True,
+    tts_min_interval=1.2,
+):
     device = select_device(device)
     model = DetectMultiBackend(weights, device=device)
-    stride, names, pt = model.stride, model.names, model.pt
+    stride, names, _pt = model.stride, model.names, model.pt
     imgsz = check_img_size(imgsz, s=stride)
 
     translator = Translator() if Translator is not None else None
@@ -121,7 +130,11 @@ def run(weights=ROOT / "yolov5s.pt",
 
     source = str(source)
     webcam = source.isnumeric() or source.endswith(".streams")
-    dataset = LoadStreams(source, img_size=imgsz, stride=stride) if webcam else LoadImages(source, img_size=imgsz, stride=stride)
+    dataset = (
+        LoadStreams(source, img_size=imgsz, stride=stride)
+        if webcam
+        else LoadImages(source, img_size=imgsz, stride=stride)
+    )
 
     for path, im, im0s, vid_cap, s in dataset:
         im = torch.from_numpy(im).to(device)
@@ -159,10 +172,12 @@ def run(weights=ROOT / "yolov5s.pt",
             im0 = annotator.result()
             if view_img:
                 cv2.imshow(str(path), im0)
-                if cv2.waitKey(1) == ord('q'):
+                if cv2.waitKey(1) == ord("q"):
                     return
 
+
 # ------------------ CLI ------------------
+
 
 def parse_opt():
     parser = argparse.ArgumentParser()
@@ -180,9 +195,11 @@ def parse_opt():
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1
     return opt
 
+
 def main(opt):
     check_requirements(ROOT / "requirements.txt", exclude=("tensorboard", "thop"))
-    run(weights=opt.weights,
+    run(
+        weights=opt.weights,
         source=opt.source,
         imgsz=opt.imgsz,
         conf_thres=opt.conf_thres,
@@ -191,7 +208,9 @@ def main(opt):
         view_img=opt.view_img,
         target_language=opt.target_lang,
         tts_prefer_online=opt.tts_online,
-        tts_min_interval=opt.tts_interval)
+        tts_min_interval=opt.tts_interval,
+    )
+
 
 if __name__ == "__main__":
     opt = parse_opt()
