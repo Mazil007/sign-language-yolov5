@@ -28,7 +28,7 @@ The following augmentation was applied to create 3 versions of each source image
 * 50% probability of horizontal flip
 * Randomly crop between 0 and 20 percent of the image
 * Random rotation of between -15 and +15 degrees
-* Random brigthness adjustment of between -20 and +20 percent
+* Random brightness adjustment of between -20 and +20 percent
 * Random Gaussian blur of between 0 and 1.8 pixels
 
 

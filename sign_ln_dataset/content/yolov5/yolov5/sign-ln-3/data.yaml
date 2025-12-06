@@ -1,11 +1,11 @@
 names:
-- HELLO
-- I LOVE YOU
-- 'NO'
-- Please
-- Thank you
-- 'YES'
-- how are
+  - HELLO
+  - I LOVE YOU
+  - "NO"
+  - Please
+  - Thank you
+  - "YES"
+  - how are
 nc: 7
 roboflow:
   license: CC BY 4.0
